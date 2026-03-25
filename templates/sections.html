@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sections</title>
+  <style>
+    /* FONT — Sof, zamonaviy */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background-color: #f9f9f9;
+      color: #222;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 60px;
+      border-bottom: 1px solid #e5e5e5;
+      background-color: #fff;
+    }
+
+    header h1 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    nav {
+      display: flex;
+      gap: 25px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: #444;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    nav a:hover {
+      color: #007aff;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    .button-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 30px;
+      width: 100%;
+      max-width: 800px;
+    }
+
+    .button {
+      display: block;
+      text-decoration: none;
+      background-color: #fff;
+      color: #222;
+      padding: 22px 0; /* kattaroq balandlik */
+      text-align: center;
+      border-radius: 12px; /* yumaloqroq burchaklar */
+      border: 1px solid #ddd;
+      transition: all 0.25s ease;
+      font-size: 1.15rem; /* biroz kattaroq matn */
+      font-weight: 500;
+    }
+
+    .button:hover {
+      border-color: #007aff;
+      color: #007aff;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.06);
+      transform: translateY(-3px);
+    }
+
+    footer {
+      text-align: center;
+      padding: 18px 0;
+      color: #888;
+      font-size: 0.9rem;
+      border-top: 1px solid #e5e5e5;
+      background-color: #fff;
+    }
+
+    /* Responsive moslashtirish */
+    @media (max-width: 800px) {
+      .button-container {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 600px;
+      }
+    }
+
+    @media (max-width: 500px) {
+      .button-container {
+        grid-template-columns: 1fr;
+        max-width: 350px;
+      }
+
+      header {
+        flex-direction: column;
+        gap: 10px;
+        padding: 15px 20px;
+      }
+
+      nav {
+        gap: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Sections</h1>
+  <nav>
+    <a href="{% url 'products' %}">Mahsulotlar</a>
+    <a href="#">Mijozlar</a>
+    <a href="#">Sotuvlar</a>
+    <a href="#">Kirimlar</a>
+    <a href="#">Qarzlar</a>
+    <a href="/admin/">Admin</a>
+  </nav>
+</header>
+
+<main>
+  <div class="button-container">
+    <a href="{% url 'products' %}" class="button">Mahsulotlar</a>
+    <a href="#" class="button">Mijozlar ro'yxati</a>
+    <a href="#" class="button">Sotuvlar tarixi</a>
+    <a href="#" class="button">Kirimlar tarixi</a>
+    <a href="#" class="button">To'langan qarzlar</a>
+    <a href="/admin/" class="button">Admin Panel</a>
+  </div>
+</main>
+
+<footer>
+  © 2025 Otabek Tursunov tomonidan yaratilgan.
+</footer>
+
+</body>
+</html>
