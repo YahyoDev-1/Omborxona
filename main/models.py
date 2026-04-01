@@ -1,10 +1,10 @@
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.contrib.auth import get_user_model
+from django.conf import settings
 
 # Create your models here.
 
-User = get_user_model()
+User = settings.AUTH_USER_MODEL
 
 
 class Branch(models.Model):
@@ -19,9 +19,9 @@ class Product(models.Model):
     brand = models.CharField(max_length=100, blank=True, null=True)
     price = models.FloatField(validators=[MinValueValidator(0.0)])
     amount = models.FloatField(validators=[MinValueValidator(0.0)], default=0.0)
-    unit = models.CharField(max_length=20)
+    unit = models.CharField(max_length=20, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
-    branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
+    branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -34,7 +34,7 @@ class Client(models.Model):
     address = models.CharField(max_length=255, blank=True, null=True)
     debt = models.FloatField(validators=[MinValueValidator(0.0)], default=0.0)
     created_at = models.DateTimeField(auto_now_add=True)
-    branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
+    branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -58,9 +58,9 @@ class Sale(models.Model):
 
 class ImportProduct(models.Model):
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, blank=True, null=True)
-    amount = models.FloatField(validators=[MinValueValidator(0.0)], default=1)
+    amount = models.FloatField(validators=[MinValueValidator(0.0)])
     buy_price = models.FloatField(validators=[MinValueValidator(0.0)])
-    sell_price = models.FloatField(validators=[MinValueValidator(0.0)])
+    sell_price = models.FloatField(validators=[MinValueValidator(0.0)], blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -68,6 +68,7 @@ class ImportProduct(models.Model):
 
     def __str__(self):
         return f"{self.product.name} -- {self.amount} -- {self.product.unit}"
+
 
 class PayDebt(models.Model):
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
@@ -78,4 +79,4 @@ class PayDebt(models.Model):
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.client.name} -- {self.amount}"
+        return f"{self.client.name} -- {self.amount} -- {self.description}"

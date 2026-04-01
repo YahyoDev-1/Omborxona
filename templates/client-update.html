@@ -8,24 +8,24 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1 class="m-0">Mahsulotlar</h1>
+                    <h1 class="m-0">Mijozlar</h1>
                 </div><!-- /.col -->
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="#">Tizimdan chiqish</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'logout' %}">Tizimdan chiqish</a></li>
                     </ol>
                 </div><!-- /.col -->
             </div><!-- /.row -->
         </div><!-- /.container-fluid -->
         <!-- /.content-header -->
         <div class="col-md-12">
-            <form method="post" id="edit-product-form">
+            <form method="post" id="edit-client-form">
                 {% csrf_token %}
-                <label for="name">Mahsulot nomi:</label>
-                <input type="text" name="name" id="name" value="{{ product.name }}" class="form-control" required>
+                <label for="name">Mijoz ismi:</label>
+                <input type="text" name="name" id="name" value="{{ client.name }}" class="form-control" required>
                 <br>
-                <label for="brand">Brend:</label>
-                <input type="text" name="brand" placeholder="Mavjud emas!" {% if product.brand %} value="{{ product.brand }}" {% endif %} id="brand" class="form-control">
+                <label for="shop_name">Do'kon:</label>
+                <input type="text" name="shop_name" placeholder="Mavjud emas!" {% if product.brand %} value="{{ client.shop_name }}" {% endif %} id="shop_name" class="form-control">
                 <br>
                 <label for="price">Sotish narxi(so'm):</label>
                 <input type="number" name="price" value="{{ product.price }}" class="form-control" id="price" required>
