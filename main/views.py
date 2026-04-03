@@ -19,6 +19,7 @@ class Sections(LoginRequiredMixin, View):
 
 class Products(LoginRequiredMixin, View):
     login_url = 'login'
+
     def get(self, request):
         products = Product.objects.filter(branch=request.user.branch).annotate(
             total_price=ExpressionWrapper(
@@ -46,6 +47,7 @@ class Products(LoginRequiredMixin, View):
 
 class ProductUpdateView(LoginRequiredMixin, View):
     login_url = 'login'
+
     def get_object(self, pk):
         return get_object_or_404(Product, pk=pk)
 
