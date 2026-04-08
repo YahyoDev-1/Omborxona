@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="/static/img_1.png">
+    <title>Tizimdan Chiqish</title>
+</head>
+<body>
+    <div class="delete-container">
+        <h2>Haqiqatdan ham tizimdan chiqmoqchimisiz ?</h2>
+
+        <!-- Bosh sahifaga qaytarish -->
+        <div class="button-group">
+            <a href="{% url 'home' %}" class="btn btn-cancel">
+                Bekor qilish
+            </a>
+
+            <!-- POST so'rovi yuborish orqali chiqish -->
+            <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-delete">Ha, chiqilsin...</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

@@ -25,16 +25,19 @@
                 <input type="text" name="name" id="name" value="{{ client.name }}" class="form-control" required>
                 <br>
                 <label for="shop_name">Do'kon:</label>
-                <input type="text" name="shop_name" placeholder="Mavjud emas!" {% if product.brand %} value="{{ client.shop_name }}" {% endif %} id="shop_name" class="form-control">
+                <input type="text" name="shop_name" placeholder="Mavjud emas!"  value="{{ client.shop_name }}" id="shop_name" class="form-control">
                 <br>
-                <label for="price">Sotish narxi(so'm):</label>
-                <input type="number" name="price" value="{{ product.price }}" class="form-control" id="price" required>
+                <label for="phone_number">Telefon raqam:</label>
+                <input type="text" name="phone_number" value="{{ client.phone_number }}" class="form-control" id="phone_number">
                 <br>
-                <label for="unit">O'lchov birligi:</label>
-                <input type="text" name="unit" placeholder="Mavjud emas!" {% if product.unit %} value="{{ product.unit }}" {% endif %} class="form-control" id="unit" required>
+                <label for="address">Manzil:</label>
+                <input type="text" name="address" placeholder="Mavjud emas!" {% if client.address %} value="{{ client.address }}" {% endif %} class="form-control" id="address">
                 <br>
-                <label for="amount">Mavjud {% if product.unit %} ({{ product.unit }}): {% endif %}</label>
-                <input type="number" name="amount" value="{{ product.amount }}" class="form-control" id="amount" required>
+                <label for="debt">Qarz:</label>
+                <input type="number" name="debt" value="{{ client.debt }}" class="form-control" id="debt" required>
+                <br>
+                <label for="created_at">Sana:</label>
+                <input type="date" name="created_at" value="{{ client.created_at }}" class="form-control" id="created_at">
                 <br>
                 <!-- Modal footer -->
                 <button type="submit" class="btn btn-success">Yangilash</button>

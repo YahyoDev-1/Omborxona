@@ -133,6 +133,11 @@
 
   <div class="login-box">
     <h2>Tizimga kirish</h2>
+      {% if messages %}
+        {% for message in messages %}
+            <p style="color: red;" >{{ message }}</p>
+        {% endfor %}
+      {% endif %}
     <form method="post">
       {% csrf_token %}
       <div class="form-group">

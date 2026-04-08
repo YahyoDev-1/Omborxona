@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% block debts_active %} active {% endblock %}
+{% block page_title %} To'langan qarzlar {% endblock %}
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Sotuvlar</h1>
+                </div><!-- /.col -->
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{% url 'logout' %}">Tizimdan Chiqish</a></li>
+                    </ol>
+                </div><!-- /.col -->
+            </div><!-- /.row -->
+        </div><!-- /.container-fluid -->
+    </div>
+    <!-- /.content-header -->
+    <div class="col-md-12">
+        <div class="card card-dark">
+            <div class="card-header border-0">
+                <div class="d-flex justify-content-between">
+                    <button type="submit" class="btn btn-primary" data-toggle="modal" data-target="#myModal">Yangi sotuv </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="table" style="text-align: center;">
+                    <thead>
+                    <tr>
+                        <th scope="col" style="width: 15px">T/r</th>
+                        <th scope="col" style="width: 255px; text-align: center;">Mahsulot</th>
+                        <th scope="col" style="text-align: center;">Mijoz</th>
+                        <th scope="col" style="text-align: center;">Sana</th>
+                        <th scope="col" style="text-align: center;">Miqdor</th>
+                        <th scope="col" style="text-align: center;">Tavsif</th>
+                        <th scope="col" style="text-align: center;">Umumiy summa</th>
+                        <th scope="col" style="text-align: center;">To'landi</th>
+                        <th scope="col" style="text-align: center;">Qarz</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for sale in sales %}
+                        <tr>
+                        <th scope="row">{{ forloop.counter }}.</th>
+                        <td>{{ sale.product.name }} {% if sale.product.brand %}, {{ sale.product.brand }} {% endif %}</td>
+                        <td>{{ sale.client.name }} {% if sale.client.shop_name %}, {{ sale.client.shop_name }} {% endif %}</td>
+                        <td>{{ sale.created_at|date:"d.m.Y" }}</td>
+                        <td>{{ sale.amount }} {{ sale.product.unit }}</td>
+                        <td> {% if sale.description %} {{ sale.description }} {% endif %}</td>
+                        <td>{{ sale.total_price }} so'm</td>
+                        <td>{{ sale.paid_price }} so'm</td>
+                        <td>{{ sale.debt_price }} so'm</td>
+                        <td>
+                            <a href="{% url 'sale-update' sale.id %}">
+                            <button type="submit" class="btn btn-warning" data-toggle="modal">Tahrirlash</button>
+                            </a>
+                            <a href="#">
+                            <button type="submit" class="btn btn-danger" data-toggle="modal">O'chirish</button>
+                            </a>
+                        </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- The Modal -->
+    <div class="modal" id="myModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <!-- Modal Header -->
+                <div class="modal-header bg-dark">
+                    <h4 class="modal-title">Yangi sotuv</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+
+                <!-- Modal body -->
+                <form id="new-product-form" method="post">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <label for="product">Mahsulot:</label>
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                        <select name="product_id" id="product" class="form-control">
+                            {% for product in products %}
+                                <option value="{{ product.id }}">{{ product.name }} --  {{ product.price }} -- {{ product.amount }} {{ product.unit }}</option>
+                            {% endfor %}
+                        </select>
+                        <br>
+                        <label for="client">Mijoz:</label>
+                        <select name="client_id" id="client" class="form-control">
+                            {% for client in clients %}
+                                <option value="{{ client.id }}">{{ client.name }} {% if client.shop_name %} -- {{ client.shop_name }} {% endif %}</option>
+                            {% endfor %}
+                        </select>
+                        <br>
+                        <label for="amount">Miqdor:</label>
+                        <input type="number" name="amount" value="1" id="amount" class="form-control" required>
+                        <br>
+                        <label for="description">Tavsif:</label>
+                        <input type="text" name="description" id="description" class="form-control">
+                        <br>
+                        <label for="total_price">Umumiy summa:</label>
+                        <input type="number" name="total_price"  id="total_price" class="form-control">
+                        <br>
+                        <label for="paid_price">To'landi(so'm):</label>
+                        <input type="number" name="paid_price"  id="paid_price" class="form-control">
+                        <br>
+                        <label for="debt_price">Qarz:</label>
+                        <input type="number" name="debt_price" id="debt_price" class="form-control">
+                        <br>
+                    </div>
+
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">Qo`shish</button>
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Yopish</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ./wrapper -->
+{% endblock %}

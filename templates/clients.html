@@ -40,6 +40,7 @@
                         <th scope="col" style="text-align: center;">Telefon raqam</th>
                         <th scope="col" style="text-align: center;">Manzil</th>
                         <th scope="col" style="text-align: center;">Qarz</th>
+                        <th scope="col" style="text-align: center;">Sana</th>
                         <th scope="col" style="text-align: center;"></th>
                     </tr>
                     </thead>
@@ -52,11 +53,12 @@
                         <td>{{ client.phone_number }}</td>
                         <td>{{ client.address }}</td>
                         <td>{{ client.debt }}</td>
+                        <td>{{ client.created_at }}</td>
                         <td>
-                            <a href="#">
+                            <a href="{% url 'client-update' pk=client.id %}">
                                 <button type="submit" class="btn btn-warning" data-toggle="modal">Tahrirlash</button>
                             </a>
-                            <a href="#">
+                            <a href="{% url 'client-delete' pk=client.id %}">
                                 <button type="submit" class="btn btn-danger" data-toggle="modal">O'chirish</button>
                             </a>
                         </td>

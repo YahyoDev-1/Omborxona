@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Sotuvlar</h1>
+                </div><!-- /.col -->
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{% url 'logout' %}">Tizimdan chiqish</a></li>
+                    </ol>
+                </div><!-- /.col -->
+            </div><!-- /.row -->
+        </div><!-- /.container-fluid -->
+        <!-- /.content-header -->
+        <div class="col-md-12">
+            <form method="post" id="edit-client-form">
+                {% csrf_token %}
+                <label for="name">Mahsulot:</label>
+                <input type="text" name="name" id="name" value="{{ sale.product.name }}" class="form-control">
+                <br>
+                <label for="client">Mijoz:</label>
+                <input type="text" name="client" value="{{ sale.client.name }}" id="client" class="form-control">
+                <br>
+                <label for="amount">Miqdor:</label>
+                <input type="number" name="amount" value="{{ sale.amount }}"  class="form-control" id="amount">
+                <br>
+                <label for="description">Batafsil:</label>
+                <input type="text" name="description" placeholder="Mavjud emas!" {% if sale.description %} value="{{ sale.description }}" {% endif %} class="form-control" id="description" >
+                <br>
+                <label for="total_price">Umumiy Summa:</label>
+                <input type="number" name="total_price" value="{{ sale.total_price }}" class="form-control" id="total_price">
+                <br>
+                <br>
+                <label for="paid_price">To'landi:</label>
+                <input type="number" name="paid_price" value="{{ sale.paid_price }}"  class="form-control" id="paid_price">
+                <br>
+                <label for="debt_price">Qarz:</label>
+                <input type="number" name="debt_price" value="{{ sale.debt_price }}" class="form-control" id="debt_price">
+                <br>
+                <!-- Modal footer -->
+                <button type="submit" class="btn btn-success">Yangilash</button>
+                <a href="{% url 'sales' %}">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Yopish</button>
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

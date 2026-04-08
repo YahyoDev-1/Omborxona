@@ -17,9 +17,15 @@ class LoginView(View):
         )
         if user is not None:
             login(request, user)
+            messages.success(request, "You have successfully logged in")
             return redirect('sections')
+        messages.error(request, "Username or password is incorrect")
         return render(request, 'login.html')
 
+
 def logout_view(request):
-    logout(request)
-    return redirect('login')
+    if request.method == "POST":
+        logout(request)
+        return redirect('login')
+
+    return render(request, 'logout-confirmation.html')

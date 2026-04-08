@@ -20,12 +20,28 @@
             </div><!-- /.row -->
         </div><!-- /.container-fluid -->
     </div>
+    {% if messages %}
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            <strong>{{ message }}</strong>
+                            <button type="button" class="close" data-dismiss="alert">
+                                <span>&times;</span>
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
     <!-- /.content-header -->
     <div class="col-md-12">
         <div class="card card-dark">
             <div class="card-header border-0">
                 <div class="d-flex justify-content-between">
-                    <button type="submit" class="btn btn-primary" data-toggle="modal" data-target="#myModal">Mahsulot
+                    <button type="submit" class="btn btn-primary" data-toggle="modal" data-target="#myModal"><i class="fas fa-plus"></i> Mahsulot
                         qo'shish
                     </button>
                 </div>
@@ -40,6 +56,7 @@
                         <th scope="col" style="text-align: center;">Narxi</th>
                         <th scope="col" style="text-align: center;">Miqdori</th>
                         <th scope="col" style="text-align: center;">Yangilangan</th>
+                        <th scope="col" style="text-align: center;">Jami summa</th>
                         <th scope="col" style="text-align: center; margin-left: 40px;">Harakatlar</th>
                         <th scope="col" style="text-align: center;"></th>
                     </tr>
@@ -52,6 +69,7 @@
                         <td>{{ product.brand }}</td>
                         <td>{{ product.price }} so'm</td>
                         <td>{{ product.amount }} {% if product.unit %} - {{ product.unit }} {% endif %}</td>
+                        <td><strong>{{ product.total_price }} so'm</strong></td>
                         <td>{{ product.updated_at|date:"d.m.Y" }}</td>
                         <td><a href="{% url 'product-update' product.id %}">
                             <button type="submit" class="btn btn-warning" data-toggle="modal">Tahrirlash</button>
@@ -75,7 +93,7 @@
                 <!-- Modal Header -->
                 <div class="modal-header bg-dark">
                     <h4 class="modal-title">Yangi mahsulot</h4>
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
                 </div>
 
                 <!-- Modal body -->
