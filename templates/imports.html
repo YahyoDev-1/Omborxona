@@ -25,7 +25,7 @@
         <div class="card card-dark">
             <div class="card-header border-0">
                 <div class="d-flex justify-content-between">
-                    <button type="submit" class="btn btn-primary" data-toggle="modal" data-target="#myModal">Yangi kirim </button>
+                    <button type="submit" class="btn btn-primary" data-toggle="modal" data-target="#myModal"><i class="fas fa-plus"></i>Yangi kirim </button>
                 </div>
             </div>
             <div class="card-body">
@@ -50,10 +50,10 @@
                         <td>{{ import.sell_price }}</td>
                         <td> {% if import.description %} {{ import.description }} {% endif %}</td>
                         <td>
-                            <a href="{% url 'sale-update' sale.id %}">
+                            <a href="{% url 'import-update' import.id %}">
                             <button type="submit" class="btn btn-warning" data-toggle="modal">Tahrirlash</button>
                             </a>
-                            <a href="#">
+                            <a href="{% url 'import-delete' import.id %}">
                             <button type="submit" class="btn btn-danger" data-toggle="modal">O'chirish</button>
                             </a>
                         </td>
@@ -72,7 +72,7 @@
 
                 <!-- Modal Header -->
                 <div class="modal-header bg-dark">
-                    <h4 class="modal-title">Yangi sotuv</h4>
+                    <h4 class="modal-title">Yangi kirim</h4>
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
 
@@ -87,27 +87,17 @@
                             {% endfor %}
                         </select>
                         <br>
-                        <label for="client">Mijoz:</label>
-                        <select name="client_id" id="client" class="form-control">
-                            {% for client in clients %}
-                                <option value="{{ client.id }}">{{ client.name }} {% if client.shop_name %} -- {{ client.shop_name }} {% endif %}</option>
-                            {% endfor %}
-                        </select>
-                        <br>
                         <label for="amount">Miqdor:</label>
                         <input type="number" name="amount" value="1" id="amount" class="form-control" required>
                         <br>
+                        <label for="buy_price">Olish narxi:</label>
+                        <input type="number" name="buy_price"  id="buy_price" class="form-control" required>
+                        <br>
+                        <label for="sell_price">Sotish narxi:</label>
+                        <input type="number" name="sell_price"  id="sell_price" class="form-control">
+                        <br>
                         <label for="description">Tavsif:</label>
                         <input type="text" name="description" id="description" class="form-control">
-                        <br>
-                        <label for="total_price">Umumiy summa:</label>
-                        <input type="number" name="total_price"  id="total_price" class="form-control">
-                        <br>
-                        <label for="paid_price">To'landi(so'm):</label>
-                        <input type="number" name="paid_price"  id="paid_price" class="form-control">
-                        <br>
-                        <label for="debt_price">Qarz:</label>
-                        <input type="number" name="debt_price" id="debt_price" class="form-control">
                         <br>
                     </div>
 

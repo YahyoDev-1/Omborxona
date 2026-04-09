@@ -14,7 +14,7 @@
                 </div><!-- /.col -->
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="#">Tizimdan chiqish</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'logout' %}">Tizimdan chiqish</a></li>
                     </ol>
                 </div><!-- /.col -->
             </div><!-- /.row -->
@@ -57,7 +57,7 @@
                         <th scope="col" style="text-align: center;">Miqdori</th>
                         <th scope="col" style="text-align: center;">Yangilangan</th>
                         <th scope="col" style="text-align: center;">Jami summa</th>
-                        <th scope="col" style="text-align: center; margin-left: 40px;">Harakatlar</th>
+                        <th scope="col" style="text-align: center; margin-left: 40px;">Amallar</th>
                         <th scope="col" style="text-align: center;"></th>
                     </tr>
                     </thead>
@@ -69,8 +69,8 @@
                         <td>{{ product.brand }}</td>
                         <td>{{ product.price }} so'm</td>
                         <td>{{ product.amount }} {% if product.unit %} - {{ product.unit }} {% endif %}</td>
-                        <td><strong>{{ product.total_price }} so'm</strong></td>
                         <td>{{ product.updated_at|date:"d.m.Y" }}</td>
+                        <td><strong>{{ product.total_price }} so'm</strong></td>
                         <td><a href="{% url 'product-update' product.id %}">
                             <button type="submit" class="btn btn-warning" data-toggle="modal">Tahrirlash</button>
                         </a></td>

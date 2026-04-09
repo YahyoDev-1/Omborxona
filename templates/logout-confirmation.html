@@ -5,23 +5,87 @@
     <meta charset="UTF-8">
     <link rel="icon" type="image/png" href="/static/img_1.png">
     <title>Tizimdan Chiqish</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .delete-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .delete-container h2 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 22px;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-around;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            flex: 1;
+            text-align: center;
+        }
+
+        .btn-cancel {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-cancel:hover {
+            background-color: #d5d5d5;
+        }
+
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background-color: #c82333;
+        }
+    </style>
+
 </head>
 <body>
-    <div class="delete-container">
-        <h2>Haqiqatdan ham tizimdan chiqmoqchimisiz ?</h2>
+<div class="delete-container">
+    <h2>Haqiqatdan ham tizimdan chiqmoqchimisiz ?</h2>
 
-        <!-- Bosh sahifaga qaytarish -->
-        <div class="button-group">
-            <a href="{% url 'home' %}" class="btn btn-cancel">
-                Bekor qilish
-            </a>
+    <!-- Bosh sahifaga qaytarish -->
+    <div class="button-group">
+        <a href="{% url 'sections' %}" class="btn btn-cancel">
+            Bekor qilish
+        </a>
 
-            <!-- POST so'rovi yuborish orqali chiqish -->
-            <form action="{% url 'logout' %}" method="post" style="display:inline;">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-delete">Ha, chiqilsin...</button>
-            </form>
-        </div>
+        <!-- POST so'rovi yuborish orqali chiqish -->
+        <form action="{% url 'logout' %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-delete">Ha, chiqilsin...</button>
+        </form>
     </div>
+</div>
 </body>
 </html>

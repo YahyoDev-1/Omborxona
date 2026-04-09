@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">To'langan qarzlar</h1>
+                </div><!-- /.col -->
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{% url 'logout' %}">Tizimdan chiqish</a></li>
+                    </ol>
+                </div><!-- /.col -->
+            </div><!-- /.row -->
+        </div><!-- /.container-fluid -->
+        <!-- /.content-header -->
+        <div class="col-md-12">
+            <form method="post" id="edit-client-form">
+                {% csrf_token %}
+                <label for="name">Mijoz:</label>
+                <input type="text" name="name" id="name" value="{{ client.name }}" class="form-control">
+                <br>
+                <label for="amount">Miqdor:</label>
+                <input type="number" name="amount" value="{{ debt.amount }}"  class="form-control" id="amount">
+                <br>
+                <label for="description">Batafsil:</label>
+                <input type="text" name="description" placeholder="Mavjud emas!" {% if debt.description %} value="{{ debt.description }}" {% endif %} class="form-control" id="description" >
+                <br>
+                <!-- Modal footer -->
+                <button type="submit" class="btn btn-success">Yangilash</button>
+                <a href="{% url 'debts' %}">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Yopish</button>
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

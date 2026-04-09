@@ -23,5 +23,13 @@ urlpatterns = [
 
     path('imports/', ImportsView.as_view(), name='imports'),
 
+    path('imports/<int:pk>/update', ImportUpdateView.as_view(), name='import-update'),
+
+    path('imports/<int:pk>/delete', ImportDeleteView.as_view(), name='import-delete'),
+
     path('debts/', DebtsView.as_view(), name='debts'),
+
+    path('debts/<int:pk>/update', DebtUpdateView.as_view(), name='debt-update'),
+
+    path('debts/<int:pk>/delete', DebtDeleteView.as_view(), name='debt-delete'),
 ]

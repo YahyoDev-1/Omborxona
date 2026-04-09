@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Kirimlar</h1>
+                </div><!-- /.col -->
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{% url 'logout' %}">Tizimdan chiqish</a></li>
+                    </ol>
+                </div><!-- /.col -->
+            </div><!-- /.row -->
+        </div><!-- /.container-fluid -->
+        <!-- /.content-header -->
+        <div class="col-md-12">
+            <form method="post" id="edit-client-form">
+                {% csrf_token %}
+                <label for="name">Mahsulot:</label>
+                <input type="text" name="name" id="name" value="{{ import_product.product.name }}" class="form-control">
+                <br>
+                <label for="amount">Miqdor:</label>
+                <input type="number" name="amount" value="{{ import_product.amount }}"  class="form-control" id="amount">
+                <br>
+                <label for="buy_price">Olish narxi:</label>
+                <input type="number" name="buy_price" value="{{ import_product.buy_price }}"  class="form-control" id="buy_price">
+                <br>
+                <label for="sell_price">Sotish narxi:</label>
+                <input type="number" name="sell_price" value="{{ import_product.sell_price }}" class="form-control" id="sell_price">
+                <br>
+                <label for="description">Batafsil:</label>
+                <input type="text" name="description" placeholder="Mavjud emas!" {% if import_product.description %} value="{{ import_product.description }}" {% endif %} class="form-control" id="description" >
+                <br>
+                <!-- Modal footer -->
+                <button type="submit" class="btn btn-success">Yangilash</button>
+                <a href="{% url 'imports' %}">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Yopish</button>
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

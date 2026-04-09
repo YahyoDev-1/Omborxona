@@ -1,5 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import ExpressionWrapper, F, FloatField
+from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from .models import *
@@ -13,7 +14,7 @@ class Sections(LoginRequiredMixin, View):
 
     def get(self, request):
         context = {
-            'user': request.user,
+            'branch': request.user.branch,
         }
         return render(request, 'sections.html', context)
 
@@ -413,6 +414,13 @@ class SalesView(LoginRequiredMixin, View):
                 context = self.get_context_data(request)
                 return render(request, self.template_name, context)
 
+            # User branchini tekshirish
+            user_branch = getattr(request.user, "branch", None)
+
+            if user_branch is None:
+                # Bu yerda xatolik qaytaring yoki foydalanuvchini ogohlantiring
+                return HttpResponse("Sizga filial biriktirilmagan. Iltimos, administratorga murojaat qiling.")
+
             # ✅ STEP 7: SOTISH QO'SHISH
             Sale.objects.create(
                 product=product,
@@ -475,21 +483,160 @@ class SaleUpdateView(LoginRequiredMixin, View):
         return redirect('sales')
 
 
-class ImportsView(LoginRequiredMixin, View):
+class SaleDeleteView(LoginRequiredMixin, View):
     login_url = 'login'
 
-    def get(self, request):
-        imports_list = ImportProduct.objects.all().order_by('-created_at')
-        products = Product.objects.all().order_by('-updated_at')
+    def get_object(self, pk):
+        return get_object_or_404(Sale, pk=pk, branch=self.request.user.branch)
+
+    def get(self, request, pk):
+        sale = self.get_object(pk)
         context = {
-            'imports_list': imports_list,
+            'sale': sale,
+        }
+        return render(request, 'sale-delete.html', context)
+
+    def post(self, request, pk):
+        sale = self.get_object(pk)
+        sale.delete()
+        return redirect('sales')
+
+
+class ImportsView(LoginRequiredMixin, View):
+    login_url = 'login'
+    template_name = 'imports.html'
+
+    def get_context_data(self, request):
+        return {
+            'products': Product.objects.filter(branch=request.user.branch).order_by('-id'),
         }
 
-        return render(request, 'imports.html', context)
+    def get(self, request):
+        context = self.get_context_data(request)
+        return render(request, self.template_name, context)
+
+    def post(self, request):
+        product_id = request.POST.get('product_id')
+        amount = request.POST.get('amount')
+        buy_price = request.POST.get('buy_price')
+        sell_price = request.POST.get('sell_price')
+        description = request.POST.get('description', '')
+
+        user_branch = request.user.branch
+        if not user_branch:
+            messages.error(request, "Sizga filial biriktirilmagan!")
+            return redirect('imports')
+
+        try:
+            amount = float(amount)
+            buy_price = float(buy_price)
+
+            if amount <= 0:
+                messages.error(request, "Miqdor 0 dan katta bo'lishi kerak!")
+                return redirect('imports')
+
+            if not sell_price or sell_price == "":
+                sell_price = buy_price
+            else:
+                sell_price = float(sell_price)
+
+            # --- MANA BU YERDA FAQAT ImportProduct YARATAMIZ ---
+            ImportProduct.objects.create(
+                product_id=product_id,  # To'g'ridan-to'g'ri ID orqali bog'lash osonroq
+                amount=amount,
+                buy_price=buy_price,
+                sell_price=sell_price,
+                description=description,
+                user=request.user,
+                branch=user_branch
+            )
+
+            messages.success(request, "Kirim muvaffaqiyatli amalga oshirildi!")
+
+        except ValueError:
+            messages.error(request, "Narx yoki miqdor xato kiritildi!")
+        except Exception as e:
+            messages.error(request, f"Xatolik: {e}")
+
+        return redirect('imports')
+
+class ImportUpdateView(LoginRequiredMixin, View):
+    login_url = 'login'
+
+    def get_object(self, pk):
+        return get_object_or_404(ImportProduct, pk=pk, branch=self.request.user.branch)
+
+    def get(self, request, pk):
+        import_product = self.get_object(pk)
+        context = {
+            'import_product': import_product,
+        }
+        return render(request, 'import-update.html', context)
+
+
+
+class ImportDeleteView(LoginRequiredMixin, View):
+    login_url = 'login'
+
+    def get_object(self, pk):
+            return get_object_or_404(ImportProduct, pk=pk, branch=self.request.user.branch)
+
+    def get(self, request, pk):
+        import_product = self.get_object(pk)
+        context = {
+            'import_product': import_product,
+        }
+        return render(request, 'import-delete.html', context)
+
+    def post(self, request, pk):
+        import_product = self.get_object(pk)
+        import_product.delete()
+        return redirect('imports')
 
 
 class DebtsView(LoginRequiredMixin, View):
     login_url = 'login'
+    template_name = 'debts.html'
+
+    def get_context_data(self, request):
+        return {
+            'debts': PayDebt.objects.filter(branch=request.user.branch).order_by('-id'),
+            'clients':Client.objects.filter(branch=request.user.branch).order_by('-id'),
+        }
 
     def get(self, request):
-        return render(request, 'debts.html')
+        context = self.get_context_data(request)
+        return render(request, self.template_name, context)
+
+class DebtUpdateView(LoginRequiredMixin, View):
+    login_url = 'login'
+
+    def get_object(self, pk):
+        return get_object_or_404(PayDebt, pk=pk, branch=self.request.user.branch)
+
+    def get(self, request, pk):
+        debt = self.get_object(pk)
+        context = {
+            'debt': debt,
+        }
+        return render(request, 'debt-update.html', context)
+
+
+
+class DebtDeleteView(LoginRequiredMixin, View):
+    login_url = 'login'
+
+    def get_object(self, pk):
+            return get_object_or_404(PayDebt, pk=pk, branch=self.request.user.branch)
+
+    def get(self, request, pk):
+        debt = self.get_object(pk)
+        context = {
+            'debt': debt,
+        }
+        return render(request, 'debt-delete.html', context)
+
+    def post(self, request, pk):
+        debt = self.get_object(pk)
+        debt.delete()
+        return redirect('debts')

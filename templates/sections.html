@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="/static/img_1.png">
   <title>Bo'limlar</title>
   <style>
     /* FONT — Sof, zamonaviy */
@@ -131,15 +132,8 @@
 <body>
 
 <header>
-  <h1>Sections</h1>
-  <nav>
-    <a href="#">Mahsulotlar</a>
-    <a href="#">Mijozlar</a>
-    <a href="#">Sotuvlar</a>
-    <a href="#">Kirimlar</a>
-    <a href="#">Qarzlar</a>
-    <a href="/admin/">Admin</a>
-  </nav>
+  <h1>Bo'limlar</h1>
+  <h2>Xush kelibsiz -- {{ request.user }}</h2>
 </header>
 
 <main>
@@ -147,8 +141,8 @@
     <a href="{% url 'products' %}" class="button">Mahsulotlar</a>
     <a href="{% url 'clients' %}" class="button">Mijozlar ro'yxati</a>
     <a href="{% url 'sales' %}" class="button">Sotuvlar tarixi</a>
-    <a href="#" class="button">Kirimlar tarixi</a>
-    <a href="#" class="button">To'langan qarzlar</a>
+    <a href="{% url 'imports' %}" class="button">Kirimlar tarixi</a>
+    <a href="{% url 'debts' %}" class="button">To'langan qarzlar</a>
     <a href="/admin/" class="button">Admin Panel</a>
   </div>
 </main>
