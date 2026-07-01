@@ -75,6 +75,27 @@ class OwnerAssignedAdmin(BranchScopedAdmin):
         super().save_model(request, obj, form, change)
 
 
+class ReconciledElsewhereAdmin(BranchScopedAdmin):
+    """
+    For models whose stock/debt side effects on create/update/delete are
+    implemented in the web views (main/views.py), not in a model signal.
+    Editing or deleting one of these directly through admin would silently
+    desync Product.amount/Client.debt with no way to reconstruct the
+    correct value - so all writes are blocked here unconditionally, even
+    for SuperAdmins. The data stays visible/searchable (read-only audit
+    trail); every change must go through the reconciling view instead.
+    """
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
 @admin.register(Branch)
 class BranchAdmin(admin.ModelAdmin):
     """Branches are the tenant boundary itself, so only a SuperAdmin may manage them."""
@@ -115,24 +136,13 @@ class ClientAdmin(BranchScopedAdmin):
 
 
 @admin.register(Sale)
-class SaleAdmin(OwnerAssignedAdmin):
+class SaleAdmin(ReconciledElsewhereAdmin):
     branch_scoped_fk_fields = ('product', 'client')
 
     list_display = ('product', 'client', 'amount', 'total_price', 'paid_price', 'debt_price', 'branch', 'created_at')
     list_filter = ('branch', 'created_at')
     search_fields = ('product__name', 'client__name')
     readonly_fields = ('created_at',)
-
-    def get_actions(self, request):
-        actions = super().get_actions(request)
-        actions.pop('delete_selected', None)
-        return actions
-
-    def has_delete_permission(self, request, obj=None):
-        # Sales are the audit trail behind stock levels and client debt.
-        # Deleting one desyncs both with no way to reconstruct history, so
-        # nobody - including SuperAdmins - deletes a sale from the admin.
-        return False
 
 
 @admin.register(ImportProduct)
@@ -144,9 +154,19 @@ class ImportProductAdmin(OwnerAssignedAdmin):
     search_fields = ('product__name',)
     readonly_fields = ('created_at',)
 
+    # Creation stays open: the post_save signal reconciles stock correctly
+    # no matter how the row is created. Editing/deleting bypass that
+    # signal's delta/guard logic entirely (see ImportUpdateView/
+    # ImportDeleteView in main/views.py), so those two stay blocked.
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 @admin.register(PayDebt)
-class PayDebtAdmin(OwnerAssignedAdmin):
+class PayDebtAdmin(ReconciledElsewhereAdmin):
     branch_scoped_fk_fields = ('client',)
 
     list_display = ('client', 'amount', 'branch', 'created_at')

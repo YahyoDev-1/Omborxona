@@ -2,6 +2,7 @@ from decimal import Decimal, InvalidOperation
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db import transaction
 from django.db.models import DecimalField, ExpressionWrapper, F, ProtectedError
 from django.shortcuts import get_object_or_404, redirect, render
@@ -16,6 +17,24 @@ ZERO = Decimal('0')
 # when Django tries to quantize it for storage.
 MAX_MONEY = Decimal('999999999999.99')
 MAX_QUANTITY = Decimal('999999999.999')
+
+LIST_PAGE_SIZE = 20
+
+
+def paginate(request, queryset, per_page=LIST_PAGE_SIZE):
+    """
+    Return the requested ?page= of a queryset as a Django Page object.
+
+    Templates iterate over the result directly (Page supports __iter__)
+    and render controls via {% include '_pagination.html' with page_obj=... %}.
+    A missing, non-numeric, or out-of-range page falls back to page 1
+    instead of raising, since this only ever backs a list view.
+    """
+    paginator = Paginator(queryset, per_page)
+    try:
+        return paginator.page(request.GET.get('page'))
+    except (PageNotAnInteger, EmptyPage):
+        return paginator.page(1)
 
 
 def parse_decimal(raw, *, minimum=None, maximum=None):
@@ -70,11 +89,11 @@ class Products(LoginRequiredMixin, View):
         ).order_by('-total_price')
 
     def get(self, request):
-        return render(request, self.template_name, {'products': self.get_products(request)})
+        return render(request, self.template_name, {'products': paginate(request, self.get_products(request))})
 
     def _invalid(self, request, message):
         messages.error(request, message)
-        return render(request, self.template_name, {'products': self.get_products(request)})
+        return render(request, self.template_name, {'products': paginate(request, self.get_products(request))})
 
     def post(self, request):
         name = (request.POST.get('name') or '').strip()
@@ -101,8 +120,13 @@ class Products(LoginRequiredMixin, View):
         if existing_product:
             return self._invalid(
                 request,
-                f"⚠️ '{name}' nomli mahsulot allaqachon mavjud! "
-                f"Miqdor: {existing_product.amount}, Narx: {existing_product.price}"
+                f"⚠️ '{name}' mahsuloti ombor ro'yxatida allaqachon bor "
+                f"(joriy qoldiq: {existing_product.amount} {existing_product.unit or ''}, "
+                f"narx: {existing_product.price} so'm). "
+                f"Yangi partiya kelgan bo'lsa, bu yerdan qayta qo'shmang - aks holda bitta "
+                f"mahsulot ikki qatorga bo'linib, qoldiq va sotuvlar tarixi chalkashadi. "
+                f"Buning o'rniga 'Kirimlar' bo'limiga o'ting, shu mahsulotni tanlang va "
+                f"yangi kelgan miqdorni kiriting - qoldiq avtomatik qo'shiladi."
             )
 
         product = Product.objects.create(
@@ -186,8 +210,8 @@ class ClientsView(LoginRequiredMixin, View):
     template_name = 'clients.html'
 
     def get(self, request):
-        clients = Client.objects.filter(branch=request.user.branch)
-        return render(request, self.template_name, {'clients': clients})
+        clients = Client.objects.filter(branch=request.user.branch).order_by('-id')
+        return render(request, self.template_name, {'clients': paginate(request, clients)})
 
     def post(self, request):
         name = (request.POST.get('name') or '').strip()
@@ -204,10 +228,25 @@ class ClientsView(LoginRequiredMixin, View):
         else:
             debt = ZERO
 
+        phone_number = (request.POST.get('phone_number') or '').strip() or None
+        if phone_number:
+            # Without this, a client with unpaid debt could dodge the
+            # debt-block on new sales by simply being "re-registered" as a
+            # fresh client record with a clean (zero) debt.
+            existing_client = Client.objects.filter(phone_number=phone_number, branch=request.user.branch).first()
+            if existing_client:
+                messages.error(
+                    request,
+                    f"⚠️ Bu telefon raqami bilan mijoz allaqachon mavjud: '{existing_client.name}' "
+                    f"(joriy qarzi: {existing_client.debt} so'm). Yangi mijoz qo'shish o'rniga shu "
+                    f"mijozdan foydalaning."
+                )
+                return redirect('clients')
+
         Client.objects.create(
             name=name,
             shop_name=(request.POST.get('shop_name') or '').strip() or None,
-            phone_number=(request.POST.get('phone_number') or '').strip() or None,
+            phone_number=phone_number,
             address=(request.POST.get('address') or '').strip() or None,
             debt=debt,
             branch=request.user.branch,
@@ -273,7 +312,7 @@ class SalesView(LoginRequiredMixin, View):
 
     def get_context_data(self, request):
         return {
-            'sales': Sale.objects.filter(branch=request.user.branch).order_by('-created_at'),
+            'sales': paginate(request, Sale.objects.filter(branch=request.user.branch).order_by('-created_at')),
             'products': Product.objects.filter(branch=request.user.branch).order_by('-id'),
             'clients': Client.objects.filter(branch=request.user.branch),
         }
@@ -324,6 +363,13 @@ class SalesView(LoginRequiredMixin, View):
             client = get_object_or_404(
                 Client.objects.select_for_update(), pk=request.POST.get('client_id'), branch=user_branch
             )
+
+            if client.debt > 0:
+                return self._invalid(
+                    request,
+                    f"❌ '{client.name}' mijozning {client.debt} so'm qarzi bor! "
+                    f"Avval qarzni to'liq yopmasdan yangi sotuv amalga oshirib bo'lmaydi."
+                )
 
             if product.amount < amount:
                 return self._invalid(
@@ -491,7 +537,16 @@ class ImportsView(LoginRequiredMixin, View):
     template_name = 'imports.html'
 
     def get_context_data(self, request):
-        return {'products': Product.objects.filter(branch=request.user.branch).order_by('-id')}
+        imports = ImportProduct.objects.filter(
+            branch=request.user.branch
+        ).select_related('product').order_by('-created_at')
+        return {
+            # `imports_list` is what imports.html actually loops over - it
+            # was missing entirely before, so the Kirimlar table always
+            # rendered empty regardless of how many imports existed.
+            'imports_list': paginate(request, imports),
+            'products': Product.objects.filter(branch=request.user.branch).order_by('-id'),
+        }
 
     def get(self, request):
         return render(request, self.template_name, self.get_context_data(request))
@@ -637,7 +692,7 @@ class DebtsView(LoginRequiredMixin, View):
 
     def get_context_data(self, request):
         return {
-            'debts': PayDebt.objects.filter(branch=request.user.branch).order_by('-id'),
+            'debts': paginate(request, PayDebt.objects.filter(branch=request.user.branch).order_by('-id')),
             'clients': Client.objects.filter(branch=request.user.branch).order_by('-id'),
         }
 

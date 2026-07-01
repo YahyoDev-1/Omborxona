@@ -69,7 +69,7 @@
                     <tbody>
                     {% for sale in sales %}
                         <tr>
-                            <th scope="row">{{ forloop.counter }}.</th>
+                            <th scope="row">{{ sales.start_index|add:forloop.counter0 }}.</th>
                             <td>{{ sale.product.name }} {% if sale.product.brand %}, {{ sale.product.brand }} {% endif %}</td>
                             <td>{{ sale.client.name }} {% if sale.client.shop_name %}, {{ sale.client.shop_name }} {% endif %}</td>
                             <td>{{ sale.created_at|date:"d.m.Y" }}</td>
@@ -94,6 +94,7 @@
                     {% endfor %}
                     </tbody>
                 </table>
+                {% include '_pagination.html' with page_obj=sales %}
             </div>
         </div>
     </div>

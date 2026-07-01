@@ -64,7 +64,7 @@
                     <tbody>
                     {% for product in products %}
                     <tr>
-                        <th scope="row">{{ forloop.counter }}.</th>
+                        <th scope="row">{{ products.start_index|add:forloop.counter0 }}.</th>
                         <td>{{ product.name }}</td>
                         <td>{{ product.brand }}</td>
                         <td>{{ product.price }} so'm</td>
@@ -81,6 +81,7 @@
                     {% endfor %}
                     </tbody>
                 </table>
+                {% include '_pagination.html' with page_obj=products %}
             </div>
         </div>
     </div>
