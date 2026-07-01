@@ -22,7 +22,7 @@ class LoginView(View):
         if not user.is_superuser and user.branch_id is None:
             messages.error(
                 request,
-                "Sizga hech qanday filial biriktirilmagan. Administratorga murojaat qiling."
+                "You have no branches assigned to you. Contact the administrator."
             )
             return render(request, 'login.html')
 
