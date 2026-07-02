@@ -1,0 +1,20 @@
+<form method="get" class="form-row align-items-end mb-3">
+    <div class="col-md-{% if show_date_range %}5{% else %}9{% endif %} mb-2">
+        <label class="small mb-1 text-muted">{{ search_label|default:"Qidiruv" }}</label>
+        <input type="text" name="q" value="{{ search_query }}" class="form-control"
+               placeholder="{{ search_placeholder|default:"Ism yoki telefon raqami..." }}">
+    </div>
+    {% if show_date_range %}
+        <div class="col-md-3 col-6 mb-2">
+            <label class="small mb-1 text-muted">Sanadan</label>
+            <input type="date" name="date_from" value="{{ date_from }}" class="form-control">
+        </div>
+        <div class="col-md-3 col-6 mb-2">
+            <label class="small mb-1 text-muted">Sanagacha</label>
+            <input type="date" name="date_to" value="{{ date_to }}" class="form-control">
+        </div>
+    {% endif %}
+    <div class="col-md-1 mb-2">
+        <button type="submit" class="btn btn-primary w-100" title="Qidirish"><i class="fas fa-search"></i></button>
+    </div>
+</form>

@@ -15,12 +15,20 @@ class LoginView(View):
             username=request.POST.get('username'),
             password=request.POST.get('password')
         )
-        if user is not None:
-            login(request, user)
-            messages.success(request, "You have successfully logged in")
-            return redirect('sections')
-        messages.error(request, "Username or password is incorrect")
-        return render(request, 'login.html')
+        if user is None:
+            messages.error(request, "Username or password is incorrect")
+            return render(request, 'login.html')
+
+        if not user.is_superuser and user.branch_id is None:
+            messages.error(
+                request,
+                "You have no branches assigned to you. Contact the administrator."
+            )
+            return render(request, 'login.html')
+
+        login(request, user)
+        messages.success(request, "You have successfully logged in")
+        return redirect('sections')
 
 
 def logout_view(request):

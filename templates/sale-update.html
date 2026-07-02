@@ -22,10 +22,10 @@
             <form method="post" id="edit-client-form">
                 {% csrf_token %}
                 <label for="name">Mahsulot:</label>
-                <input type="text" name="name" id="name" value="{{ sale.product.name }}" class="form-control">
+                <input type="text" id="name" value="{{ sale.product.name }}" class="form-control" disabled>
                 <br>
                 <label for="client">Mijoz:</label>
-                <input type="text" name="client" value="{{ sale.client.name }}" id="client" class="form-control">
+                <input type="text" value="{{ sale.client.name }}" id="client" class="form-control" disabled>
                 <br>
                 <label for="amount">Miqdor:</label>
                 <input type="number" name="amount" value="{{ sale.amount }}"  class="form-control" id="amount">

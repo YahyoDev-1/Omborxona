@@ -47,6 +47,7 @@
                 </div>
             </div>
             <div class="card-body">
+                {% include '_list_filter.html' with search_placeholder="Mahsulot nomi yoki brendi..." %}
                 <table class="table" style="text-align: center;">
                     <thead>
                     <tr>
@@ -64,11 +65,11 @@
                     <tbody>
                     {% for product in products %}
                     <tr>
-                        <th scope="row">{{ forloop.counter }}.</th>
+                        <th scope="row">{{ products.start_index|add:forloop.counter0 }}.</th>
                         <td>{{ product.name }}</td>
                         <td>{{ product.brand }}</td>
                         <td>{{ product.price }} so'm</td>
-                        <td>{{ product.amount }} {% if product.unit %} - {{ product.unit }} {% endif %}</td>
+                        <td>{{ product.amount }} {% if product.unit %} - {{ product.get_unit_display }} {% endif %}</td>
                         <td>{{ product.updated_at|date:"d.m.Y" }}</td>
                         <td><strong>{{ product.total_price }} so'm</strong></td>
                         <td><a href="{% url 'product-update' product.id %}">
@@ -81,6 +82,7 @@
                     {% endfor %}
                     </tbody>
                 </table>
+                {% include '_pagination.html' with page_obj=products %}
             </div>
         </div>
     </div>
@@ -116,8 +118,12 @@
                                class="form-control" required>
                         <br>
                         <label for="unit">O'lchov birligi:</label>
-                        <input type="text" name="unit" placeholder="Mahsulot birligi..." id="unit" class="form-control"
-                               required>
+                        <select name="unit" id="unit" class="form-control" required>
+                            <option value="" disabled selected>Tanlang...</option>
+                            {% for value, label in unit_choices %}
+                                <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
                         <br>
                     </div>
 

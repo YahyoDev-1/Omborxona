@@ -29,6 +29,7 @@
                 </div>
             </div>
             <div class="card-body">
+                {% include '_list_filter.html' with show_date_range=True search_placeholder="Mijoz yoki telefon raqami..." %}
                 <table class="table" style="text-align: center;">
                     <thead>
                     <tr>
@@ -43,7 +44,7 @@
                     <tbody>
                     {% for debt in debts %}
                         <tr>
-                        <th scope="row">{{ forloop.counter }}.</th>
+                        <th scope="row">{{ debts.start_index|add:forloop.counter0 }}.</th>
                         <td>{{ debt.client.name }} {% if debt.client.shop_name %}, {{ debt.client.shop_name }} {% endif %}</td>
                         <td>{{ debt.amount }}</td>
                         <td>{{ debt.created_at|date:"d.m.Y" }}</td>
@@ -60,6 +61,7 @@
                     {% endfor %}
                     </tbody>
                 </table>
+                {% include '_pagination.html' with page_obj=debts %}
             </div>
         </div>
     </div>

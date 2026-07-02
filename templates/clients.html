@@ -31,6 +31,7 @@
                 </div>
             </div>
             <div class="card-body">
+                {% include '_list_filter.html' with search_placeholder="Ism, do'kon yoki telefon raqami..." %}
                 <table class="table" style="text-align: center;">
                     <thead>
                     <tr>
@@ -47,12 +48,18 @@
                     <tbody>
                 {% for client in clients %}
                     <tr>
-                        <th scope="row">{{ forloop.counter }}.</th>
+                        <th scope="row">{{ clients.start_index|add:forloop.counter0 }}.</th>
                         <td>{{ client.name }}</td>
                         <td>{{ client.shop_name }}</td>
                         <td>{{ client.phone_number }}</td>
                         <td>{{ client.address }}</td>
-                        <td>{{ client.debt }}</td>
+                        <td>
+                            {% if client.debt > 0 %}
+                                <span class="badge badge-debt">{{ client.debt }} so'm</span>
+                            {% else %}
+                                <span class="badge badge-paid">Qarzi yo'q</span>
+                            {% endif %}
+                        </td>
                         <td>{{ client.created_at }}</td>
                         <td>
                             <a href="{% url 'client-update' pk=client.id %}">
@@ -66,6 +73,7 @@
                 {% endfor %}
                     </tbody>
                 </table>
+                {% include '_pagination.html' with page_obj=clients %}
             </div>
         </div>
     </div>
