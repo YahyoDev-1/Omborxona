@@ -1,3 +1,4 @@
+from datetime import datetime
 from decimal import Decimal
 
 from django.test import TestCase
@@ -109,6 +110,21 @@ class ReconciliationTests(TestCase):
         self.assertEqual(self.product.amount, Decimal('85.000'))
         # debt delta: 90 - 40 = +50 on top of the 40 already applied
         self.assertEqual(self.customer.debt, Decimal('90.00'))
+
+    def test_product_create_rejects_unit_outside_fixed_choices(self):
+        resp = self.client.post('/products/', {
+            'name': 'Flour', 'price': '5', 'amount': '10', 'unit': 'kilogram',
+        })
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(Product.objects.filter(name='Flour').exists())
+
+    def test_product_update_rejects_unit_outside_fixed_choices(self):
+        resp = self.client.post(f'/products/{self.product.pk}/update', {
+            'name': self.product.name, 'price': '5', 'amount': '10', 'unit': 'KG',
+        })
+        self.assertEqual(resp.status_code, 200)
+        self.product.refresh_from_db()
+        self.assertEqual(self.product.unit, 'kg')  # unchanged - "KG" isn't a valid choice
 
     def test_product_delete_blocked_when_sales_exist(self):
         Sale.objects.create(
@@ -323,6 +339,71 @@ class PaginationTests(TestCase):
         resp = self.client.get('/imports/')
         self.assertIn('imports_list', resp.context)
         self.assertEqual(len(resp.context['imports_list']), 3)
+
+
+class SearchAndFilterTests(TestCase):
+    def setUp(self):
+        self.branch = Branch.objects.create(name='Main')
+        self.user = User.objects.create_user(username='cashier', password='pass12345', branch=self.branch)
+        self.client.force_login(self.user)
+
+        self.product = Product.objects.create(
+            name='Sugar', price=Decimal('10.00'), amount=Decimal('100.000'), unit='kg', branch=self.branch,
+        )
+        self.ali = Client.objects.create(name='Ali', phone_number='+998901112233', branch=self.branch)
+        self.vali = Client.objects.create(name='Vali', phone_number='+998907776655', branch=self.branch)
+
+    def test_client_search_matches_name_or_phone(self):
+        resp = self.client.get('/clients/', {'q': 'ali'})
+        names = {c.name for c in resp.context['clients']}
+        self.assertEqual(names, {'Ali', 'Vali'})  # 'ali' is a substring of both names
+
+        resp = self.client.get('/clients/', {'q': '1112233'})
+        names = {c.name for c in resp.context['clients']}
+        self.assertEqual(names, {'Ali'})
+
+    def test_client_search_is_scoped_to_branch(self):
+        other_branch = Branch.objects.create(name='Other')
+        Client.objects.create(name='Ali Cross-Branch', phone_number='+998901112233', branch=other_branch)
+
+        resp = self.client.get('/clients/', {'q': 'Cross-Branch'})
+        self.assertEqual(len(resp.context['clients']), 0)
+
+    def test_sales_search_and_date_range(self):
+        old_sale = Sale.objects.create(
+            product=self.product, client=self.ali, amount=Decimal('1'),
+            total_price=Decimal('10.00'), paid_price=Decimal('10.00'), user=self.user, branch=self.branch,
+        )
+        old_sale.created_at = datetime(2020, 1, 1, tzinfo=old_sale.created_at.tzinfo)
+        old_sale.save(update_fields=['created_at'])
+
+        Sale.objects.create(
+            product=self.product, client=self.vali, amount=Decimal('1'),
+            total_price=Decimal('10.00'), paid_price=Decimal('10.00'), user=self.user, branch=self.branch,
+        )
+
+        resp = self.client.get('/sales/', {'q': 'Vali'})
+        self.assertEqual(len(resp.context['sales']), 1)
+        self.assertEqual(resp.context['sales'][0].client, self.vali)
+
+        resp = self.client.get('/sales/', {'date_from': '2019-01-01', 'date_to': '2019-12-31'})
+        self.assertEqual(len(resp.context['sales']), 0)
+
+        resp = self.client.get('/sales/', {'date_from': '2019-01-01', 'date_to': '2020-12-31'})
+        self.assertEqual(len(resp.context['sales']), 1)
+        self.assertEqual(resp.context['sales'][0].client, self.ali)
+
+    def test_malformed_date_filter_is_ignored_not_a_500(self):
+        resp = self.client.get('/sales/', {'date_from': 'not-a-date'})
+        self.assertEqual(resp.status_code, 200)
+
+    def test_pagination_preserves_active_search_query(self):
+        for i in range(25):
+            Client.objects.create(name=f'Findable {i}', phone_number=f'+99890000{i:04d}', branch=self.branch)
+
+        resp = self.client.get('/clients/', {'q': 'Findable', 'page': '2'})
+        self.assertEqual(resp.context['clients'].number, 2)
+        self.assertIn('q=Findable', resp.context['querystring'])
 
 
 class LoginBranchGateTests(TestCase):

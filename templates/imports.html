@@ -29,6 +29,7 @@
                 </div>
             </div>
             <div class="card-body">
+                {% include '_list_filter.html' with show_date_range=True search_placeholder="Mahsulot nomi..." %}
                 <table class="table" style="text-align: center;">
                     <thead>
                     <tr>
@@ -84,7 +85,7 @@
                         <label for="product">Mahsulot:</label>
                         <select name="product_id" id="product" class="form-control">
                             {% for product in products %}
-                                <option value="{{ product.id }}">{{ product.name }} --  {{ product.price }} -- {{ product.amount }} {{ product.unit }}</option>
+                                <option value="{{ product.id }}">{{ product.name }} --  {{ product.price }} -- {{ product.amount }} {{ product.get_unit_display }}</option>
                             {% endfor %}
                         </select>
                         <br>

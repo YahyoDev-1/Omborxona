@@ -31,9 +31,14 @@
                 <input type="number" name="price" value="{{ product.price }}" class="form-control" id="price" required>
                 <br>
                 <label for="unit">O'lchov birligi:</label>
-                <input type="text" name="unit" placeholder="Mavjud emas!" {% if product.unit %} value="{{ product.unit }}" {% endif %} class="form-control" id="unit" required>
+                <select name="unit" id="unit" class="form-control" required>
+                    <option value="" disabled {% if not product.unit %}selected{% endif %}>Tanlang...</option>
+                    {% for value, label in unit_choices %}
+                        <option value="{{ value }}" {% if product.unit == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
                 <br>
-                <label for="amount">Mavjud {% if product.unit %} ({{ product.unit }}): {% endif %}</label>
+                <label for="amount">Mavjud {% if product.unit %} ({{ product.get_unit_display }}): {% endif %}</label>
                 <input type="number" name="amount" value="{{ product.amount }}" class="form-control" id="amount" required>
                 <br>
                 <!-- Modal footer -->

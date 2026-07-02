@@ -51,6 +51,7 @@
                 </div>
             </div>
             <div class="card-body">
+                {% include '_list_filter.html' with show_date_range=True search_placeholder="Mijoz, telefon yoki mahsulot..." %}
                 <table class="table" style="text-align: center;">
                     <thead>
                     <tr>
@@ -73,11 +74,17 @@
                             <td>{{ sale.product.name }} {% if sale.product.brand %}, {{ sale.product.brand }} {% endif %}</td>
                             <td>{{ sale.client.name }} {% if sale.client.shop_name %}, {{ sale.client.shop_name }} {% endif %}</td>
                             <td>{{ sale.created_at|date:"d.m.Y" }}</td>
-                            <td>{{ sale.amount }} {{ sale.product.unit }}</td>
+                            <td>{{ sale.amount }} {{ sale.product.get_unit_display }}</td>
                             <td>{% if sale.description %} {{ sale.description }} {% endif %}</td>
                             <td>{{ sale.total_price }} so'm</td>
                             <td>{{ sale.paid_price }} so'm</td>
-                            <td>{{ sale.debt_price }} so'm</td>
+                            <td>
+                                {% if sale.debt_price > 0 %}
+                                    <span class="badge badge-debt">{{ sale.debt_price }} so'm</span>
+                                {% else %}
+                                    <span class="badge badge-paid">To'liq to'landi</span>
+                                {% endif %}
+                            </td>
                             <td>
                                 <a href="{% url 'sale-update' sale.id %}">
                                     <button type="button" class="btn btn-sm btn-warning">
@@ -134,7 +141,7 @@
                                         {{ product.name }}
                                         {% if product.brand %} ({{ product.brand }}) {% endif %}
                                         - {{ product.price }} so'm
-                                        - Qoldiq: {{ product.amount }} {{ product.unit }}
+                                        - Qoldiq: {{ product.amount }} {{ product.get_unit_display }}
                                     </option>
                                 {% endfor %}
                             </select>

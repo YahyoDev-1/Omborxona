@@ -31,11 +31,29 @@ class Branch(models.Model):
 
 
 class Product(models.Model):
+    # Fixed choices instead of free text, so "kg"/"KG"/"kilogram" can't end
+    # up as three different values and silently split one product's stock
+    # across inconsistent units in reports.
+    UNIT_DONA = 'dona'
+    UNIT_KG = 'kg'
+    UNIT_GRAMM = 'gramm'
+    UNIT_LITR = 'litr'
+    UNIT_QUTI = 'quti'
+    UNIT_PAKET = 'paket'
+    UNIT_CHOICES = [
+        (UNIT_DONA, 'Dona'),
+        (UNIT_KG, 'Kg'),
+        (UNIT_GRAMM, 'Gramm'),
+        (UNIT_LITR, 'Litr'),
+        (UNIT_QUTI, 'Quti'),
+        (UNIT_PAKET, 'Paket'),
+    ]
+
     name = models.CharField(max_length=100)
     brand = models.CharField(max_length=100, blank=True, null=True)
     price = money_field()
     amount = quantity_field(default=0)
-    unit = models.CharField(max_length=20, null=True, blank=True)
+    unit = models.CharField(max_length=20, choices=UNIT_CHOICES, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
     branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, null=True, blank=True)
 

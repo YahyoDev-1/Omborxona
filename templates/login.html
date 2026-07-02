@@ -1,11 +1,13 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="uz">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tizimga kirish</title>
+  <link rel="icon" type="image/svg+xml" href="{% static 'branding/logo.svg' %}">
+  <title>Tizimga kirish | Omborxona CRM</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
     * {
       margin: 0;
@@ -15,36 +17,54 @@
     }
 
     body {
-      background-color: #f9f9f9;
+      background: radial-gradient(circle at top left, #ecfdf9 0%, #f8fafc 45%, #f1f5f9 100%);
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      color: #222;
+      color: #1e293b;
     }
 
     .login-box {
       background-color: #fff;
-      padding: 60px 65px; /* ichki bo'shliq biroz kattaroq */
+      padding: 56px 65px;
       border: 1px solid #e5e5e5;
       border-radius: 18px;
-      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.07);
       width: 100%;
-      max-width: 460px; /* ilgari 380 edi — endi 460 */
+      max-width: 460px;
       transition: all 0.3s ease;
     }
 
     .login-box:hover {
-      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.1);
       transform: translateY(-2px);
+    }
+
+    .login-logo {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 18px;
+    }
+
+    .login-logo img {
+      width: 56px;
+      height: 56px;
     }
 
     .login-box h2 {
       text-align: center;
-      margin-bottom: 40px;
-      font-size: 1.7rem;
-      font-weight: 600;
-      color: #222;
+      margin-bottom: 8px;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .login-box .subtitle {
+      text-align: center;
+      margin-bottom: 32px;
+      font-size: 0.92rem;
+      color: #64748b;
     }
 
     form {
@@ -77,25 +97,25 @@
 
     input:focus {
       outline: none;
-      border-color: #007aff;
-      box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+      border-color: #14b8a6;
+      box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
     }
 
     button {
-      background-color: #007aff;
+      background-color: #0f766e;
       color: #fff;
       border: none;
       border-radius: 10px;
       padding: 15px 0;
       font-size: 1.05rem;
-      font-weight: 500;
+      font-weight: 600;
       cursor: pointer;
       transition: background-color 0.25s ease, transform 0.2s ease;
       margin-top: 10px;
     }
 
     button:hover {
-      background-color: #005fcc;
+      background-color: #0c5a54;
       transform: translateY(-2px);
     }
 
@@ -107,7 +127,7 @@
     }
 
     .extra-links a {
-      color: #007aff;
+      color: #0f766e;
       text-decoration: none;
     }
 
@@ -132,10 +152,14 @@
 <body>
 
   <div class="login-box">
-    <h2>Tizimga kirish</h2>
+    <div class="login-logo">
+      <img src="{% static 'branding/logo.svg' %}" alt="Omborxona CRM">
+    </div>
+    <h2>Omborxona CRM</h2>
+    <p class="subtitle">Tizimga kirish uchun login va parolingizni kiriting</p>
       {% if messages %}
         {% for message in messages %}
-            <p style="color: red;" >{{ message }}</p>
+            <p style="color: #dc2626; text-align: center; font-size: 0.9rem; margin-bottom: 16px;">{{ message }}</p>
         {% endfor %}
       {% endif %}
     <form method="post">

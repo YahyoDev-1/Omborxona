@@ -1,10 +1,11 @@
+from datetime import datetime
 from decimal import Decimal, InvalidOperation
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db import transaction
-from django.db.models import DecimalField, ExpressionWrapper, F, ProtectedError
+from django.db.models import DecimalField, ExpressionWrapper, F, ProtectedError, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
@@ -35,6 +36,57 @@ def paginate(request, queryset, per_page=LIST_PAGE_SIZE):
         return paginator.page(request.GET.get('page'))
     except (PageNotAnInteger, EmptyPage):
         return paginator.page(1)
+
+
+def apply_search(queryset, request, fields):
+    """Filter `queryset` to rows where any of `fields` contains ?q= (case-insensitive)."""
+    query = (request.GET.get('q') or '').strip()
+    if not query:
+        return queryset
+    condition = Q()
+    for field in fields:
+        condition |= Q(**{f'{field}__icontains': query})
+    return queryset.filter(condition)
+
+
+def _parse_filter_date(raw):
+    if not raw:
+        return None
+    try:
+        return datetime.strptime(raw.strip(), '%Y-%m-%d').date()
+    except ValueError:
+        return None
+
+
+def apply_date_range(queryset, request, field='created_at'):
+    """Filter `queryset` to `field` between ?date_from= and ?date_to= (both optional, inclusive)."""
+    date_from = _parse_filter_date(request.GET.get('date_from'))
+    date_to = _parse_filter_date(request.GET.get('date_to'))
+    if date_from:
+        queryset = queryset.filter(**{f'{field}__date__gte': date_from})
+    if date_to:
+        queryset = queryset.filter(**{f'{field}__date__lte': date_to})
+    return queryset
+
+
+def list_filter_context(request, *, date_range=False):
+    """
+    Common context for a searchable/paginated list page: the active ?q=
+    and (optionally) ?date_from=/?date_to= values to redisplay in the
+    filter form, plus a querystring of every *other* GET param so
+    pagination links (see _pagination.html) don't silently drop the
+    active search/filter when moving between pages.
+    """
+    params = request.GET.copy()
+    params.pop('page', None)
+    context = {
+        'search_query': (request.GET.get('q') or '').strip(),
+        'querystring': params.urlencode(),
+    }
+    if date_range:
+        context['date_from'] = request.GET.get('date_from', '')
+        context['date_to'] = request.GET.get('date_to', '')
+    return context
 
 
 def parse_decimal(raw, *, minimum=None, maximum=None):
@@ -88,12 +140,18 @@ class Products(LoginRequiredMixin, View):
             )
         ).order_by('-total_price')
 
+    def _list_context(self, request):
+        products = apply_search(self.get_products(request), request, ['name', 'brand'])
+        context = {'products': paginate(request, products), 'unit_choices': Product.UNIT_CHOICES}
+        context.update(list_filter_context(request))
+        return context
+
     def get(self, request):
-        return render(request, self.template_name, {'products': paginate(request, self.get_products(request))})
+        return render(request, self.template_name, self._list_context(request))
 
     def _invalid(self, request, message):
         messages.error(request, message)
-        return render(request, self.template_name, {'products': paginate(request, self.get_products(request))})
+        return render(request, self.template_name, self._list_context(request))
 
     def post(self, request):
         name = (request.POST.get('name') or '').strip()
@@ -113,8 +171,8 @@ class Products(LoginRequiredMixin, View):
         if amount is None or amount <= 0:
             return self._invalid(request, "❌ Mahsulot miqdori noto'g'ri! Musbat raqam kiriting.")
 
-        if not unit:
-            return self._invalid(request, "❌ O'lchov birligi tanlanmagan!")
+        if unit not in dict(Product.UNIT_CHOICES):
+            return self._invalid(request, "❌ O'lchov birligi ro'yxatdan tanlanmagan!")
 
         existing_product = Product.objects.filter(name__iexact=name, branch=request.user.branch).first()
         if existing_product:
@@ -151,8 +209,11 @@ class ProductUpdateView(LoginRequiredMixin, View):
     def get_object(self, pk):
         return get_object_or_404(Product, pk=pk, branch=self.request.user.branch)
 
+    def _render(self, request, product):
+        return render(request, 'product-update.html', {'product': product, 'unit_choices': Product.UNIT_CHOICES})
+
     def get(self, request, pk):
-        return render(request, 'product-update.html', {'product': self.get_object(pk)})
+        return self._render(request, self.get_object(pk))
 
     def post(self, request, pk):
         product = self.get_object(pk)
@@ -165,16 +226,16 @@ class ProductUpdateView(LoginRequiredMixin, View):
 
         if not name or len(name) < 3:
             messages.error(request, "❌ Mahsulot nomi kamida 3 ta belgi bo'lishi kerak!")
-            return render(request, 'product-update.html', {'product': product})
+            return self._render(request, product)
         if price is None or price <= 0:
             messages.error(request, "❌ Mahsulot narxi noto'g'ri! Musbat raqam kiriting.")
-            return render(request, 'product-update.html', {'product': product})
+            return self._render(request, product)
         if amount is None:
             messages.error(request, "❌ Mahsulot miqdori noto'g'ri! Manfiy bo'lmagan raqam kiriting.")
-            return render(request, 'product-update.html', {'product': product})
-        if not unit:
-            messages.error(request, "❌ O'lchov birligi tanlanmagan!")
-            return render(request, 'product-update.html', {'product': product})
+            return self._render(request, product)
+        if unit not in dict(Product.UNIT_CHOICES):
+            messages.error(request, "❌ O'lchov birligi ro'yxatdan tanlanmagan!")
+            return self._render(request, product)
 
         product.name = name
         product.brand = brand or None
@@ -211,7 +272,10 @@ class ClientsView(LoginRequiredMixin, View):
 
     def get(self, request):
         clients = Client.objects.filter(branch=request.user.branch).order_by('-id')
-        return render(request, self.template_name, {'clients': paginate(request, clients)})
+        clients = apply_search(clients, request, ['name', 'shop_name', 'phone_number'])
+        context = {'clients': paginate(request, clients)}
+        context.update(list_filter_context(request))
+        return render(request, self.template_name, context)
 
     def post(self, request):
         name = (request.POST.get('name') or '').strip()
@@ -311,11 +375,16 @@ class SalesView(LoginRequiredMixin, View):
     template_name = 'sales.html'
 
     def get_context_data(self, request):
-        return {
-            'sales': paginate(request, Sale.objects.filter(branch=request.user.branch).order_by('-created_at')),
+        sales = Sale.objects.filter(branch=request.user.branch).select_related('product', 'client').order_by('-created_at')
+        sales = apply_search(sales, request, ['client__name', 'client__phone_number', 'product__name'])
+        sales = apply_date_range(sales, request, 'created_at')
+        context = {
+            'sales': paginate(request, sales),
             'products': Product.objects.filter(branch=request.user.branch).order_by('-id'),
             'clients': Client.objects.filter(branch=request.user.branch),
         }
+        context.update(list_filter_context(request, date_range=True))
+        return context
 
     def get(self, request):
         return render(request, self.template_name, self.get_context_data(request))
@@ -540,13 +609,17 @@ class ImportsView(LoginRequiredMixin, View):
         imports = ImportProduct.objects.filter(
             branch=request.user.branch
         ).select_related('product').order_by('-created_at')
-        return {
+        imports = apply_search(imports, request, ['product__name'])
+        imports = apply_date_range(imports, request, 'created_at')
+        context = {
             # `imports_list` is what imports.html actually loops over - it
             # was missing entirely before, so the Kirimlar table always
             # rendered empty regardless of how many imports existed.
             'imports_list': paginate(request, imports),
             'products': Product.objects.filter(branch=request.user.branch).order_by('-id'),
         }
+        context.update(list_filter_context(request, date_range=True))
+        return context
 
     def get(self, request):
         return render(request, self.template_name, self.get_context_data(request))
@@ -691,10 +764,17 @@ class DebtsView(LoginRequiredMixin, View):
     template_name = 'debts.html'
 
     def get_context_data(self, request):
-        return {
-            'debts': paginate(request, PayDebt.objects.filter(branch=request.user.branch).order_by('-id')),
+        debts = PayDebt.objects.filter(
+            branch=request.user.branch
+        ).select_related('client').order_by('-created_at')
+        debts = apply_search(debts, request, ['client__name', 'client__phone_number'])
+        debts = apply_date_range(debts, request, 'created_at')
+        context = {
+            'debts': paginate(request, debts),
             'clients': Client.objects.filter(branch=request.user.branch).order_by('-id'),
         }
+        context.update(list_filter_context(request, date_range=True))
+        return context
 
     def get(self, request):
         return render(request, self.template_name, self.get_context_data(request))

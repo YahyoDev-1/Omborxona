@@ -1,37 +1,22 @@
 <!DOCTYPE html>
 {% load static %}
-<html lang="en">
+<html lang="uz">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block page_title %} {% endblock %}</title>
-    <link rel="icon" type="image/png" href="/static/img_1.png">
+    <title>{% block page_title %} {% endblock %} | Omborxona CRM</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'branding/logo.svg' %}">
 
-    <!-- Google Font: Source Sans Pro -->
-    <link rel="stylesheet"
-          href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Google Font: Inter -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
     <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="/static/plugins/fontawesome-free/css/all.min.css">
-    <!-- IonIcons -->
-    <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link rel="stylesheet" href="{% static 'plugins/fontawesome-free/css/all.min.css' %}">
     <!-- Theme style -->
-    <link rel="stylesheet" href="/static/dist/css/adminlte.min.css">
-
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="{% static 'dist/css/adminlte.min.css' %}">
+    <!-- Omborxona CRM theme (overrides AdminLTE defaults with our palette) -->
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
 
 </head>
-<!--
-`body` tag options:
-
-  Apply one or more of the following classes to to the body tag
-  to get the desired effect
-
-  * sidebar-collapse
-  * sidebar-mini
--->
 <body class="hold-transition sidebar-mini">
 
 <div class="wrapper">
@@ -49,8 +34,13 @@
 
         <!-- Right navbar links -->
         <ul class="navbar-nav ml-auto">
-            <!-- Navbar Search -->
-
+            <li class="nav-item d-flex align-items-center">
+                {% if request.user.is_superuser %}
+                    <span class="navbar-branch-pill"><i class="fas fa-crown"></i> SuperAdmin - barcha filiallar</span>
+                {% elif request.user.branch %}
+                    <span class="navbar-branch-pill"><i class="fas fa-store"></i> {{ request.user.branch.name }} filiali</span>
+                {% endif %}
+            </li>
         </ul>
     </nav>
     <!-- /.navbar -->
@@ -58,21 +48,26 @@
     <!-- Main Sidebar Container -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
         <!-- Brand Logo -->
-        <a href="" class="brand-link">
-            <img src="/static/dist/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3"
-                 style="opacity: .8">
-            <span class="brand-text font-weight-light">Online Ombor</span>
+        <a href="{% url 'sections' %}" class="brand-link">
+            <img src="{% static 'branding/logo.svg' %}" alt="Omborxona logo" class="brand-image elevation-3"
+                 style="opacity: .95">
+            <span class="brand-text font-weight-light">Omborxona CRM</span>
         </a>
 
         <!-- Sidebar -->
         <div class="sidebar">
-            <!-- Sidebar user panel (optional) -->
+            <!-- Sidebar user panel -->
             <div class="user-panel mt-3 pb-3 mb-3 d-flex">
                 <div class="image">
-                    <img src="/static/img_1.png" class="img-circle elevation-2" alt="User Image">
+                    <i class="fas fa-user-circle" style="font-size: 2.2rem; color: #94a3b8;"></i>
                 </div>
                 <div class="info">
-                    <h5 style="color: white;" class="d-block">Yahyobek</h5>
+                    <span class="d-block" style="color: #fff; font-weight: 600;">{{ request.user.get_full_name|default:request.user.username }}</span>
+                    {% if request.user.is_superuser %}
+                        <span class="branch-badge"><i class="fas fa-crown"></i> SuperAdmin</span>
+                    {% elif request.user.branch %}
+                        <span class="branch-badge"><i class="fas fa-store"></i> {{ request.user.branch.name }}</span>
+                    {% endif %}
                 </div>
             </div>
 
@@ -83,32 +78,47 @@
                     <li class="nav-header">Bo'limlar</li>
                     <li class="nav-item">
                         <a href="{% url 'sales' %}" class="nav-link {% block sales_active %} {% endblock %}">
-                            <i class="nav-icon far fa-circle text-warning"></i>
+                            <i class="nav-icon fas fa-cash-register"></i>
                             <p>Sotuvlar</p>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="{% url 'products' %}" class="nav-link {% block products_active %} {% endblock %}">
-                            <i class="nav-icon far fa-circle text-danger"></i>
+                            <i class="nav-icon fas fa-boxes"></i>
                             <p class="text">Mahsulotlar</p>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="{% url 'clients' %}" class="nav-link {% block clients_active %} {% endblock %}">
-                            <i class="nav-icon far fa-circle text-info"></i>
+                            <i class="nav-icon fas fa-users"></i>
                             <p>Mijozlar</p>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="{% url 'imports' %}" class="nav-link {% block imports_active %} {% endblock %}">
-                            <i class="nav-icon far fa-circle text-info"></i>
+                            <i class="nav-icon fas fa-truck-loading"></i>
                             <p>Kirimlar</p>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="{% url 'debts' %}" class="nav-link {% block debts_active %} {% endblock %}">
-                            <i class="nav-icon far fa-circle text-info"></i>
+                            <i class="nav-icon fas fa-hand-holding-usd"></i>
                             <p>To'langan qarzlar</p>
+                        </a>
+                    </li>
+                    {% if request.user.is_superuser %}
+                        <li class="nav-header">Boshqaruv</li>
+                        <li class="nav-item">
+                            <a href="/admin/" class="nav-link">
+                                <i class="nav-icon fas fa-cogs"></i>
+                                <p>Admin panel</p>
+                            </a>
+                        </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a href="{% url 'logout' %}" class="nav-link">
+                            <i class="nav-icon fas fa-sign-out-alt"></i>
+                            <p>Tizimdan chiqish</p>
                         </a>
                     </li>
                 </ul>
@@ -123,15 +133,11 @@
     <!-- REQUIRED SCRIPTS -->
 
     <!-- jQuery -->
-    <script src="/static/plugins/jquery/jquery.min.js"></script>
+    <script src="{% static 'plugins/jquery/jquery.min.js' %}"></script>
     <!-- Bootstrap -->
-    <script src="/static/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
     <!-- AdminLTE -->
-    <script src="/static/dist/js/adminlte.js"></script>
-    <!-- AdminLTE for demo purposes -->
-    <script src="/static/dist/js/demo.js"></script>
-    <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
-    <script src="/static/dist/js/pages/dashboard3.js"></script>
+    <script src="{% static 'dist/js/adminlte.js' %}"></script>
 </div>
 </body>
 </html>
